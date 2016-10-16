@@ -36,4 +36,17 @@ public enum Type {
                 throw new IllegalArgumentException("Unknown value: " + s);
         }
     }
+
+    public boolean isInt() {
+        switch (this) {
+            case BOOL:
+            case INT8:
+            case INT16:
+            case INT32:
+            case INT64:
+                return true;
+            default:
+                return false;
+        }
+    }
 }

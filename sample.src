@@ -1,3 +1,6 @@
-int8 f() {
-    return 1000000000000 + 2000000000000;
+int64 f(int64 x) {
+    if (x < 1) {
+        return 1;
+    }
+    return x * f(x - 1);
 }

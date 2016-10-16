@@ -1,5 +1,6 @@
 package moklev.compiler.expression;
 
+import moklev.compiler.util.CompilerBundle;
 import moklev.compiler.util.ParseException;
 import static moklev.compiler.util.StringBuilderPrinter.*;
 
@@ -20,8 +21,8 @@ public class Int64Literal implements Expression {
     }
 
     @Override
-    public ReturnHint compile(StringBuilder sb, CompileHint hint) {
-        println(sb, "mov rax, " + value);
+    public ReturnHint compile(CompilerBundle cb, CompileHint hint) {
+        println(cb.sb, "mov rax, " + value);
         return ReturnHint.DEFAULT_RETURN;
     }
 

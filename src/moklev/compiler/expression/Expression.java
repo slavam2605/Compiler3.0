@@ -1,13 +1,15 @@
 package moklev.compiler.expression;
 
+import moklev.compiler.util.CompilerBundle;
+
 /**
  * @author Moklev Vyacheslav
  */
 public interface Expression {
-    ReturnHint compile(StringBuilder sb, CompileHint hint);
+    ReturnHint compile(CompilerBundle cb, CompileHint hint);
     Type getType();
 
-    default ReturnHint compile(StringBuilder sb) {
-        return compile(sb, CompileHint.EMPTY_HINT);
+    default ReturnHint compile(CompilerBundle cb) {
+        return compile(cb, CompileHint.EMPTY_HINT);
     }
 }

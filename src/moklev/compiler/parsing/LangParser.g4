@@ -3,14 +3,19 @@ parser grammar LangParser;
 options {tokenVocab = LangLexer;}
 
 @header {
+import java.util.*;
 import moklev.compiler.expression.*;
 import moklev.compiler.util.*;
 }
 
 @members {
 private StringBuilder sb = new StringBuilder();
-private Scope scope = new Scope();
-private int offset = 0;
+private CompilerBundle cb = new CompilerBundle(sb);
+private Scope scope = new Scope(sb);
+
+private static final String[] intArgumentRegister = new String[] {
+    "rdi", "rsi", "rdx", "rcx", "r8", "r9"
+};
 
 private void nprintln(Object... s) {
     for (int i = 0; i < s.length; i++)
@@ -36,17 +41,31 @@ private void print(Object s) {
 
 file returns [String s]
     :   function*
-        { $s = sb.toString(); }
+        { $s = cb.sb.toString(); }
     ;
 
 function
+    // TODO not only int64 arguments
     :   TYPE ID '(' argList ')' '{'
             { nprintln("global ", $ID.text);
               nprintln($ID.text, ":");
-              println("push rbp");
-              println("mov rbp, rsp");
               scope.enterScope();
-              offset = 0; }
+              List<moklev.compiler.util.Pair<Type, String>> intArgs = new ArrayList<>();
+              for (moklev.compiler.util.Pair<Type, String> pair: $argList.args) {
+                  if (pair.getFirst().isInt())
+                      intArgs.add(pair);
+              }
+              int index = 0;
+              for (moklev.compiler.util.Pair<Type, String> pair: intArgs) {
+                  if (index < 6) {
+                      Variable var = scope.allocateVariable(pair.getSecond(), pair.getFirst());
+                      println("mov [rbp - ", var.getOffset(), "], ", intArgumentRegister[index]);
+                  } else {
+                      scope.putVariable(new Variable(pair.getSecond(), pair.getFirst(), -8 * (index - 5) - 8));
+                  }
+                  index++;
+              }
+            }
             statement*
             { scope.leaveScope();
               println("pop rbp");
@@ -54,8 +73,12 @@ function
         '}'
     ;
 
-argList
-    :   TYPE ID (',' TYPE ID)*
+argList returns [List<moklev.compiler.util.Pair<Type, String>> args]
+@init {
+    $args = new ArrayList<>();
+}
+    :   t1=TYPE id1=ID {$args.add(new moklev.compiler.util.Pair<>(Type.fromString($t1.text), $id1.text));}
+        (',' tc=TYPE idc=ID {$args.add(new moklev.compiler.util.Pair<>(Type.fromString($tc.text), $idc.text));})*
     |
     ;
 
@@ -63,23 +86,31 @@ statement
     :   TYPE ID ';'
         { Type type = Type.fromString($TYPE.text);
           int sizeOf = type.getSizeOf();
-          println("sub rsp, ", sizeOf);
-          offset += sizeOf;
-          Variable var = new Variable($ID.text, type, offset);
-          scope.putVariable(var); }
+          scope.allocateVariable($ID.text, type); }
     |   expression ';'
-        { $expression.expr.compile(sb); }
+        { $expression.expr.compile(cb); }
     |   'return' expression ';'
-        { $expression.expr.compile(sb);
+        { $expression.expr.compile(cb);
+          scope.breakAllScopes();
           println("pop rbp");
           println("ret"); }
     |   'if' '(' expression ')' '{'
+        { $expression.expr.compile(cb);
+          println("test rax, rax");
+          String after = "L" + cb.labelCount++;
+          println("jz " + after);
+          scope.enterScope(); }
             statement*
+        { scope.leaveScope();
+          nprintln(after + ":"); }
         '}'
     ;
 
 expression returns [Expression expr]
     :   INT64_LITERAL { $expr = new Int64Literal($INT64_LITERAL.text); }
+    // TODO not only int64 arguments
+    // TODO save volatile registers
+    |   ID '(' exprList ')' { $expr = new FunctionCall($ID.text, $exprList.list); }
     |   ID { $expr = scope.getVariable($ID.text); }
     |   '(' e1=expression ')' { $expr = $e1.expr; }
     |   '-' expression
@@ -91,3 +122,23 @@ expression returns [Expression expr]
     |   e1=expression op='||' e2=expression                 { $expr = new BinaryExpression($op.text, $e1.expr, $e2.expr); }
     |   <assoc=right> e1=expression op='=' e2=expression    { $expr = new BinaryExpression($op.text, $e1.expr, $e2.expr); }
     ;
+
+exprList returns [List<Expression> list]
+@init {
+    $list = new ArrayList<>();
+}
+    :   e1=expression { $list.add($e1.expr); }
+        (',' ec=expression { $list.add($ec.expr); })*
+    |
+    ;
+
+
+
+
+
+
+
+
+
+
+

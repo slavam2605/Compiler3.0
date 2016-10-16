@@ -1,5 +1,9 @@
 package moklev.compiler.expression;
 
+import moklev.compiler.util.CompilerBundle;
+
+import static moklev.compiler.util.StringBuilderPrinter.*;
+
 /**
  * @author Moklev Vyacheslav
  */
@@ -23,8 +27,11 @@ public class Variable implements Expression {
     }
 
     @Override
-    public ReturnHint compile(StringBuilder sb, CompileHint hint) {
+    public ReturnHint compile(CompilerBundle cb, CompileHint hint) {
         // TODO switch (type) ...
+        if (type == Type.INT64) {
+            println(cb.sb, "mov rax, [rbp - ", offset, "]");
+        }
         return ReturnHint.DEFAULT_RETURN;
     }
 
