@@ -6,6 +6,7 @@ options {tokenVocab = LangLexer;}
 import java.util.*;
 import moklev.compiler.expression.*;
 import moklev.compiler.util.*;
+import static moklev.compiler.parsing.ParserUtils.*;
 }
 
 @members {
@@ -45,26 +46,11 @@ file returns [String s]
     ;
 
 function
-    // TODO not only int64 arguments
     :   TYPE ID '(' argList ')' '{'
             { nprintln("global ", $ID.text);
               nprintln($ID.text, ":");
               scope.enterScope();
-              List<moklev.compiler.util.Pair<Type, String>> intArgs = new ArrayList<>();
-              for (moklev.compiler.util.Pair<Type, String> pair: $argList.args) {
-                  if (pair.getFirst().isInt())
-                      intArgs.add(pair);
-              }
-              int index = 0;
-              for (moklev.compiler.util.Pair<Type, String> pair: intArgs) {
-                  if (index < 6) {
-                      Variable var = scope.allocateVariable(pair.getSecond(), pair.getFirst());
-                      println("mov [rbp - ", var.getOffset(), "], ", intArgumentRegister[index]);
-                  } else {
-                      scope.putVariable(new Variable(pair.getSecond(), pair.getFirst(), -8 * (index - 5) - 8));
-                  }
-                  index++;
-              }
+              compileFunctionArguments(cb, $argList.args, scope, intArgumentRegister);
             }
             statement*
             { scope.leaveScope();

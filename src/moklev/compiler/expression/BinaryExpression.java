@@ -2,12 +2,10 @@ package moklev.compiler.expression;
 
 import moklev.compiler.util.CompilerBundle;
 import moklev.compiler.util.Pair;
-import moklev.compiler.util.StringBuilderPrinter;
 import moklev.compiler.util.TriFunction;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
 
 import static moklev.compiler.util.StringBuilderPrinter.*;
 
@@ -23,14 +21,19 @@ public class BinaryExpression implements Expression {
 
     static {
         compilers = new HashMap<>();
+        // TODO implement all operations for all types
         compilers.put(new Pair<>("+",  Type.INT64), BinaryExpression::compileInt64Plus);
+        compilers.put(new Pair<>("+",  Type.INT32), BinaryExpression::compileInt32Plus);
+        compilers.put(new Pair<>("+",  Type.INT16), BinaryExpression::compileInt16Plus);
+        compilers.put(new Pair<>("+",  Type.INT8),  BinaryExpression::compileInt8Plus);
         compilers.put(new Pair<>("-",  Type.INT64), BinaryExpression::compileInt64Minus);
+        compilers.put(new Pair<>("-",  Type.INT8),  BinaryExpression::compileInt8Minus);
         compilers.put(new Pair<>("*",  Type.INT64), BinaryExpression::compileInt64Times);
-        compilers.put(new Pair<>("=",  Type.INT64), BinaryExpression::compileInt64Assign);
         compilers.put(new Pair<>("<",  Type.INT64), BinaryExpression::compileInt64Less);
         compilers.put(new Pair<>(">",  Type.INT64), BinaryExpression::compileInt64Greater);
         compilers.put(new Pair<>("==", Type.INT64), BinaryExpression::compileInt64Equals);
         compilers.put(new Pair<>("!=", Type.INT64), BinaryExpression::compileInt64NotEquals);
+        compilers.put(new Pair<>("=",  Type.INT64), BinaryExpression::compileInt64Assign);
     }
 
     public BinaryExpression(String op, Expression left, Expression right) {
@@ -52,42 +55,49 @@ public class BinaryExpression implements Expression {
     }
 
     private static ReturnHint compileInt64Plus(BinaryExpression expr, CompilerBundle cb, CompileHint hint) {
+        compileIntOperation(expr, cb, "add rax, r10");
+        return ReturnHint.DEFAULT_RETURN;
+    }
+
+    private static void compileIntOperation(BinaryExpression expr, CompilerBundle cb, String s3) {
         expr.left.compile(cb);
         println(cb.sb, "push rax");
         expr.right.compile(cb);
         println(cb.sb, "pop r10");
-        println(cb.sb, "add rax, r10");
+        println(cb.sb, s3);
+    }
+
+    private static ReturnHint compileInt32Plus(BinaryExpression expr, CompilerBundle cb, CompileHint hint) {
+        compileIntOperation(expr, cb, "add eax, r10d");
+        return ReturnHint.DEFAULT_RETURN;
+    }
+
+    private static ReturnHint compileInt16Plus(BinaryExpression expr, CompilerBundle cb, CompileHint hint) {
+        compileIntOperation(expr, cb, "add ax, r10w");
+        return ReturnHint.DEFAULT_RETURN;
+    }
+
+    private static ReturnHint compileInt8Plus(BinaryExpression expr, CompilerBundle cb, CompileHint hint) {
+        compileIntOperation(expr, cb, "add al, r10b");
         return ReturnHint.DEFAULT_RETURN;
     }
 
     private static ReturnHint compileInt64Minus(BinaryExpression expr, CompilerBundle cb, CompileHint hint) {
-        expr.left.compile(cb);
-        println(cb.sb, "push rax");
-        expr.right.compile(cb);
-        println(cb.sb, "pop r10");
-        println(cb.sb, "mov r11, rax");
+        compileIntOperation(expr, cb, "mov r11, rax");
         println(cb.sb, "mov rax, r10");
         println(cb.sb, "sub rax, r11");
         return ReturnHint.DEFAULT_RETURN;
     }
 
-    private static ReturnHint compileInt64Times(BinaryExpression expr, CompilerBundle cb, CompileHint hint) {
-        expr.left.compile(cb);
-        println(cb.sb, "push rax");
-        expr.right.compile(cb);
-        println(cb.sb, "pop r10");
-        println(cb.sb, "mul r10");
+    private static ReturnHint compileInt8Minus(BinaryExpression expr, CompilerBundle cb, CompileHint hint) {
+        compileIntOperation(expr, cb, "mov r11, rax");
+        println(cb.sb, "mov rax, r10");
+        println(cb.sb, "sub al, r11b");
         return ReturnHint.DEFAULT_RETURN;
     }
 
-    private static ReturnHint compileInt64Assign(BinaryExpression expr, CompilerBundle cb, CompileHint hint) {
-        // FIXME
-        if (!(expr.left instanceof Variable))
-            throw new IllegalArgumentException("Left expr is not variable");
-        expr.right.compile(cb);
-        Variable left = ((Variable) expr.left);
-        int offset = left.getOffset();
-        println(cb.sb, "mov [rbp - ", offset, "], rax");
+    private static ReturnHint compileInt64Times(BinaryExpression expr, CompilerBundle cb, CompileHint hint) {
+        compileIntOperation(expr, cb, "mul r10");
         return ReturnHint.DEFAULT_RETURN;
     }
 
@@ -112,11 +122,7 @@ public class BinaryExpression implements Expression {
     }
 
     private static void compileInt64Compare(BinaryExpression expr, CompilerBundle cb, String command) {
-        expr.left.compile(cb);
-        println(cb.sb, "push rax");
-        expr.right.compile(cb);
-        println(cb.sb, "pop r10");
-        println(cb.sb, "cmp r10, rax");
+        compileIntOperation(expr, cb, "cmp r10, rax");
         String L1 = "L" + cb.labelCount++;
         String L2 = "L" + cb.labelCount++;
         String L3 = "L" + cb.labelCount++;
@@ -127,6 +133,17 @@ public class BinaryExpression implements Expression {
         nprintln(cb.sb, L2 + ":");
         println(cb.sb, "mov rax, 1");
         nprintln(cb.sb, L3 + ":");
+    }
+
+    private static ReturnHint compileInt64Assign(BinaryExpression expr, CompilerBundle cb, CompileHint hint) {
+        if (!(expr.left instanceof LValue))
+            throw new IllegalArgumentException("Trying to assign to a not LValue: " + expr.left.getClass().getSimpleName());
+        ((LValue) expr.left).compileAddress(cb);
+        println(cb.sb, "push rax");
+        expr.right.compile(cb);
+        println(cb.sb, "pop r10");
+        println(cb.sb, "mov [r10], rax");
+        return ReturnHint.DEFAULT_RETURN;
     }
 
     @Override
