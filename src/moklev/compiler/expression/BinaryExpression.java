@@ -33,6 +33,9 @@ public class BinaryExpression implements Expression {
         compilers.put(new Pair<>("-",  Type.INT8),  BinaryExpression::compileInt8Minus);
 
         compilers.put(new Pair<>("*",  Type.INT64), BinaryExpression::compileInt64Times);
+        compilers.put(new Pair<>("*",  Type.INT32), BinaryExpression::compileInt32Times);
+        compilers.put(new Pair<>("*",  Type.INT16), BinaryExpression::compileInt16Times);
+        compilers.put(new Pair<>("*",  Type.INT8), BinaryExpression::compileInt8Times);
 
         compilers.put(new Pair<>("/",  Type.INT64), BinaryExpression::compileInt64Div);
 
@@ -135,6 +138,21 @@ public class BinaryExpression implements Expression {
         return ReturnHint.DEFAULT_RETURN;
     }
 
+    private static ReturnHint compileInt32Times(BinaryExpression expr, CompilerBundle cb, CompileHint hint) {
+        compileIntOperation(expr, cb, "mul r10d");
+        return ReturnHint.DEFAULT_RETURN;
+    }
+
+    private static ReturnHint compileInt16Times(BinaryExpression expr, CompilerBundle cb, CompileHint hint) {
+        compileIntOperation(expr, cb, "mul r10w");
+        return ReturnHint.DEFAULT_RETURN;
+    }
+
+    private static ReturnHint compileInt8Times(BinaryExpression expr, CompilerBundle cb, CompileHint hint) {
+        compileIntOperation(expr, cb, "mul r10b");
+        return ReturnHint.DEFAULT_RETURN;
+    }
+
     private static ReturnHint compileInt64Less(BinaryExpression expr, CompilerBundle cb, CompileHint hint) {
         compileInt64Compare(expr, cb, "jl");
         return ReturnHint.DEFAULT_RETURN;
@@ -179,33 +197,38 @@ public class BinaryExpression implements Expression {
         nprintln(cb.sb, L3 + ":");
     }
 
+    private static void compileIntAssign(BinaryExpression expr, CompilerBundle cb, String assignReg) {
+        if (!(expr.left instanceof LValue))
+            throw new IllegalArgumentException("Trying to assign to a not LValue: " + expr.left.getClass().getSimpleName());
+        if (expr.left instanceof Variable) {
+            expr.right.compile(cb);
+            println(cb.sb, "mov [rbp - ", ((Variable) expr.left).getOffset(), "], ", assignReg);
+        } else {
+            ((LValue) expr.left).compileAddress(cb);
+            println(cb.sb, "push rax");
+            expr.right.compile(cb);
+            println(cb.sb, "pop r10");
+            println(cb.sb, "mov [r10], ", assignReg);
+        }
+    }
+
     private static ReturnHint compileInt64Assign(BinaryExpression expr, CompilerBundle cb, CompileHint hint) {
-        compileIntAssign(expr, cb, "mov [r10], rax");
+        compileIntAssign(expr, cb, "rax");
         return ReturnHint.DEFAULT_RETURN;
     }
 
-    private static void compileIntAssign(BinaryExpression expr, CompilerBundle cb, String assignCommand) {
-        if (!(expr.left instanceof LValue))
-            throw new IllegalArgumentException("Trying to assign to a not LValue: " + expr.left.getClass().getSimpleName());
-        ((LValue) expr.left).compileAddress(cb);
-        println(cb.sb, "push rax");
-        expr.right.compile(cb);
-        println(cb.sb, "pop r10");
-        println(cb.sb, assignCommand);
-    }
-
     private static ReturnHint compileInt32Assign(BinaryExpression expr, CompilerBundle cb, CompileHint hint) {
-        compileIntAssign(expr, cb, "mov [r10], eax");
+        compileIntAssign(expr, cb, "eax");
         return ReturnHint.DEFAULT_RETURN;
     }
 
     private static ReturnHint compileInt16Assign(BinaryExpression expr, CompilerBundle cb, CompileHint hint) {
-        compileIntAssign(expr, cb, "mov [r10], ax");
+        compileIntAssign(expr, cb, "ax");
         return ReturnHint.DEFAULT_RETURN;
     }
 
     private static ReturnHint compileInt8Assign(BinaryExpression expr, CompilerBundle cb, CompileHint hint) {
-        compileIntAssign(expr, cb, "mov [r10], al");
+        compileIntAssign(expr, cb, "al");
         return ReturnHint.DEFAULT_RETURN;
     }
 

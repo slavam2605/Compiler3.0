@@ -1,5 +1,4 @@
 extern malloc;
-extern free;
 extern println_int;
 extern print_int;
 extern println;
@@ -45,8 +44,19 @@ int64 merge_sort(int64 a, int64 b, int64 l, int64 r) {
     return 0;
 }
 
-int64 f(int64 a, int64 N) {
+int64 f() {
+    int64 N = 1000000;
+    int64 a = malloc(8 * N);
     int64 b = malloc(8 * N);
+    for (int64 i = 0;; i < N; i = i + 1) {
+        *(a + 8 * i) = (N - i);
+        //print_int(*(a + 8 * i));
+    }
+    //println();
     merge_sort(a, b, 0, N);
-    free(b);
+    //print_pair(0, 0);
+    //for (int64 i = 0;; i < N; i = i + 1) {
+    //    print_int(*(a + 8 * i));
+    //}
+    //println();
 }

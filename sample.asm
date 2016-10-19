@@ -1,4 +1,5 @@
 extern malloc
+extern free
 extern println_int
 extern print_int
 extern println
@@ -41,8 +42,6 @@ L2:
     ret
 L3:
     sub rsp, 8
-    lea rax, [rbp - 40]
-    push rax
     mov rax, [rbp - 24]
     push rax
     mov rax, [rbp - 32]
@@ -55,8 +54,7 @@ L3:
     mov rax, r10
     xor rdx, rdx
     div r11
-    pop r10
-    mov [r10], rax
+    mov [rbp - 40], rax
     mov rax, [rbp - 32]
     push rax
     mov rax, [rbp - 24]
@@ -105,23 +103,14 @@ L6:
     call merge_sort
 L7:
     sub rsp, 8
-    lea rax, [rbp - 48]
-    push rax
     mov rax, [rbp - 24]
-    pop r10
-    mov [r10], rax
+    mov [rbp - 48], rax
     sub rsp, 8
-    lea rax, [rbp - 56]
-    push rax
     mov rax, [rbp - 40]
-    pop r10
-    mov [r10], rax
+    mov [rbp - 56], rax
     sub rsp, 8
-    lea rax, [rbp - 64]
-    push rax
     mov rax, [rbp - 24]
-    pop r10
-    mov [r10], rax
+    mov [rbp - 64], rax
 L8:
     mov rax, [rbp - 48]
     push rax
@@ -159,8 +148,6 @@ L11:
     test rax, rax
     jz L9
     sub rsp, 8
-    lea rax, [rbp - 72]
-    push rax
     mov rax, [rbp - 8]
     push rax
     mov rax, 8
@@ -171,11 +158,8 @@ L11:
     pop r10
     add rax, r10
     mov rax, [rax]
-    pop r10
-    mov [r10], rax
+    mov [rbp - 72], rax
     sub rsp, 8
-    lea rax, [rbp - 80]
-    push rax
     mov rax, [rbp - 8]
     push rax
     mov rax, 8
@@ -186,8 +170,7 @@ L11:
     pop r10
     add rax, r10
     mov rax, [rax]
-    pop r10
-    mov [r10], rax
+    mov [rbp - 80], rax
     mov rax, [rbp - 72]
     push rax
     mov rax, [rbp - 80]
@@ -215,24 +198,18 @@ L20:
     mov rax, [rbp - 72]
     pop r10
     mov [r10], rax
-    lea rax, [rbp - 48]
-    push rax
     mov rax, [rbp - 48]
     push rax
     mov rax, 1
     pop r10
     add rax, r10
-    pop r10
-    mov [r10], rax
-    lea rax, [rbp - 64]
-    push rax
+    mov [rbp - 48], rax
     mov rax, [rbp - 64]
     push rax
     mov rax, 1
     pop r10
     add rax, r10
-    pop r10
-    mov [r10], rax
+    mov [rbp - 64], rax
 L21:
     mov rax, [rbp - 80]
     push rax
@@ -261,24 +238,18 @@ L24:
     mov rax, [rbp - 80]
     pop r10
     mov [r10], rax
-    lea rax, [rbp - 56]
-    push rax
     mov rax, [rbp - 56]
     push rax
     mov rax, 1
     pop r10
     add rax, r10
-    pop r10
-    mov [r10], rax
-    lea rax, [rbp - 64]
-    push rax
+    mov [rbp - 56], rax
     mov rax, [rbp - 64]
     push rax
     mov rax, 1
     pop r10
     add rax, r10
-    pop r10
-    mov [r10], rax
+    mov [rbp - 64], rax
 L25:
     add rsp, 16
     mov rax, 1
@@ -321,24 +292,18 @@ L30:
     mov rax, [rax]
     pop r10
     mov [r10], rax
-    lea rax, [rbp - 64]
-    push rax
     mov rax, [rbp - 64]
     push rax
     mov rax, 1
     pop r10
     add rax, r10
-    pop r10
-    mov [r10], rax
-    lea rax, [rbp - 48]
-    push rax
+    mov [rbp - 64], rax
     mov rax, [rbp - 48]
     push rax
     mov rax, 1
     pop r10
     add rax, r10
-    pop r10
-    mov [r10], rax
+    mov [rbp - 48], rax
     jmp L26
 L27:
 L31:
@@ -378,32 +343,23 @@ L35:
     mov rax, [rax]
     pop r10
     mov [r10], rax
-    lea rax, [rbp - 64]
-    push rax
     mov rax, [rbp - 64]
     push rax
     mov rax, 1
     pop r10
     add rax, r10
-    pop r10
-    mov [r10], rax
-    lea rax, [rbp - 56]
-    push rax
+    mov [rbp - 64], rax
     mov rax, [rbp - 56]
     push rax
     mov rax, 1
     pop r10
     add rax, r10
-    pop r10
-    mov [r10], rax
+    mov [rbp - 56], rax
     jmp L31
 L32:
     sub rsp, 8
-    lea rax, [rbp - 72]
-    push rax
     mov rax, [rbp - 24]
-    pop r10
-    mov [r10], rax
+    mov [rbp - 72], rax
 L36:
     mov rax, [rbp - 72]
     push rax
@@ -441,15 +397,12 @@ L40:
     mov rax, [rax]
     pop r10
     mov [r10], rax
-    lea rax, [rbp - 72]
-    push rax
     mov rax, [rbp - 72]
     push rax
     mov rax, 1
     pop r10
     add rax, r10
-    pop r10
-    mov [r10], rax
+    mov [rbp - 72], rax
     jmp L36
 L37:
     add rsp, 8
@@ -465,102 +418,36 @@ f:
     push rbp
     mov rbp, rsp
     sub rsp, 8
-    lea rax, [rbp - 8]
-    push rax
-    mov rax, 1000000
-    pop r10
-    mov [r10], rax
+    mov [rbp - 8], rdi
     sub rsp, 8
-    lea rax, [rbp - 16]
-    push rax
+    mov [rbp - 16], rsi
+    sub rsp, 8
     mov rax, 8
     push rax
-    mov rax, [rbp - 8]
-    pop r10
-    mul r10
-    push rax
-    pop rdi
-    call malloc
-    pop r10
-    mov [r10], rax
-    sub rsp, 8
-    lea rax, [rbp - 24]
-    push rax
-    mov rax, 8
-    push rax
-    mov rax, [rbp - 8]
-    pop r10
-    mul r10
-    push rax
-    pop rdi
-    call malloc
-    pop r10
-    mov [r10], rax
-    sub rsp, 8
-    lea rax, [rbp - 32]
-    push rax
-    mov rax, 0
-    pop r10
-    mov [r10], rax
-L41:
-    mov rax, [rbp - 32]
-    push rax
-    mov rax, [rbp - 8]
-    pop r10
-    cmp r10, rax
-    jl L44
-L43:
-    xor rax, rax
-    jmp L45
-L44:
-    mov rax, 1
-L45:
-    test rax, rax
-    jz L42
     mov rax, [rbp - 16]
-    push rax
-    mov rax, 8
-    push rax
-    mov rax, [rbp - 32]
     pop r10
     mul r10
-    pop r10
-    add rax, r10
     push rax
-    mov rax, [rbp - 8]
-    push rax
-    mov rax, [rbp - 32]
-    pop r10
-    mov r11, rax
-    mov rax, r10
-    sub rax, r11
-    pop r10
-    mov [r10], rax
-    lea rax, [rbp - 32]
-    push rax
-    mov rax, [rbp - 32]
-    push rax
-    mov rax, 1
-    pop r10
-    add rax, r10
-    pop r10
-    mov [r10], rax
-    jmp L41
-L42:
-    add rsp, 8
-    mov rax, [rbp - 8]
+    pop rdi
+    call malloc
+    mov [rbp - 24], rax
+    mov rax, [rbp - 16]
     push rax
     mov rax, 0
     push rax
     mov rax, [rbp - 24]
     push rax
-    mov rax, [rbp - 16]
+    mov rax, [rbp - 8]
     push rax
     pop rdi
     pop rsi
     pop rdx
     pop rcx
     call merge_sort
+    mov rax, [rbp - 24]
+    push rax
+    pop rdi
+    call free
     add rsp, 24
     pop rbp
     ret
