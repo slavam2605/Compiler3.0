@@ -34,6 +34,8 @@ public class FunctionCall implements Expression {
     @Override
     public ReturnHint compile(CompilerBundle cb, CompileHint hint) {
         // FIXME
+        // TODO not only int64 arguments
+        // TODO save volatile registers
         Collections.reverse(list);
         for (Expression expr: list) {
             expr.compile(cb);

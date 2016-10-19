@@ -26,14 +26,34 @@ public class BinaryExpression implements Expression {
         compilers.put(new Pair<>("+",  Type.INT32), BinaryExpression::compileInt32Plus);
         compilers.put(new Pair<>("+",  Type.INT16), BinaryExpression::compileInt16Plus);
         compilers.put(new Pair<>("+",  Type.INT8),  BinaryExpression::compileInt8Plus);
+
         compilers.put(new Pair<>("-",  Type.INT64), BinaryExpression::compileInt64Minus);
+        compilers.put(new Pair<>("-",  Type.INT32), BinaryExpression::compileInt32Minus);
+        compilers.put(new Pair<>("-",  Type.INT16), BinaryExpression::compileInt16Minus);
         compilers.put(new Pair<>("-",  Type.INT8),  BinaryExpression::compileInt8Minus);
+
         compilers.put(new Pair<>("*",  Type.INT64), BinaryExpression::compileInt64Times);
+
+        compilers.put(new Pair<>("/",  Type.INT64), BinaryExpression::compileInt64Div);
+
         compilers.put(new Pair<>("<",  Type.INT64), BinaryExpression::compileInt64Less);
+
+        compilers.put(new Pair<>("<=",  Type.INT64), BinaryExpression::compileInt64LessEq);
+
         compilers.put(new Pair<>(">",  Type.INT64), BinaryExpression::compileInt64Greater);
+
+        compilers.put(new Pair<>(">=",  Type.INT64), BinaryExpression::compileInt64GreaterEq);
+
         compilers.put(new Pair<>("==", Type.INT64), BinaryExpression::compileInt64Equals);
+
         compilers.put(new Pair<>("!=", Type.INT64), BinaryExpression::compileInt64NotEquals);
+
         compilers.put(new Pair<>("=",  Type.INT64), BinaryExpression::compileInt64Assign);
+        compilers.put(new Pair<>("=",  Type.INT32), BinaryExpression::compileInt32Assign);
+        compilers.put(new Pair<>("=",  Type.INT16), BinaryExpression::compileInt16Assign);
+        compilers.put(new Pair<>("=",  Type.INT8),  BinaryExpression::compileInt8Assign);
+
+        compilers.put(new Pair<>("&&",  Type.BOOL),  BinaryExpression::compileBoolAnd);
     }
 
     public BinaryExpression(String op, Expression left, Expression right) {
@@ -89,6 +109,20 @@ public class BinaryExpression implements Expression {
         return ReturnHint.DEFAULT_RETURN;
     }
 
+    private static ReturnHint compileInt32Minus(BinaryExpression expr, CompilerBundle cb, CompileHint hint) {
+        compileIntOperation(expr, cb, "mov r11, rax");
+        println(cb.sb, "mov rax, r10");
+        println(cb.sb, "sub eax, r11d");
+        return ReturnHint.DEFAULT_RETURN;
+    }
+
+    private static ReturnHint compileInt16Minus(BinaryExpression expr, CompilerBundle cb, CompileHint hint) {
+        compileIntOperation(expr, cb, "mov r11, rax");
+        println(cb.sb, "mov rax, r10");
+        println(cb.sb, "sub ax, r11w");
+        return ReturnHint.DEFAULT_RETURN;
+    }
+
     private static ReturnHint compileInt8Minus(BinaryExpression expr, CompilerBundle cb, CompileHint hint) {
         compileIntOperation(expr, cb, "mov r11, rax");
         println(cb.sb, "mov rax, r10");
@@ -106,8 +140,18 @@ public class BinaryExpression implements Expression {
         return ReturnHint.DEFAULT_RETURN;
     }
 
+    private static ReturnHint compileInt64LessEq(BinaryExpression expr, CompilerBundle cb, CompileHint hint) {
+        compileInt64Compare(expr, cb, "jle");
+        return ReturnHint.DEFAULT_RETURN;
+    }
+
     private static ReturnHint compileInt64Greater(BinaryExpression expr, CompilerBundle cb, CompileHint hint) {
         compileInt64Compare(expr, cb, "jg");
+        return ReturnHint.DEFAULT_RETURN;
+    }
+
+    private static ReturnHint compileInt64GreaterEq(BinaryExpression expr, CompilerBundle cb, CompileHint hint) {
+        compileInt64Compare(expr, cb, "jge");
         return ReturnHint.DEFAULT_RETURN;
     }
 
@@ -136,20 +180,79 @@ public class BinaryExpression implements Expression {
     }
 
     private static ReturnHint compileInt64Assign(BinaryExpression expr, CompilerBundle cb, CompileHint hint) {
+        compileIntAssign(expr, cb, "mov [r10], rax");
+        return ReturnHint.DEFAULT_RETURN;
+    }
+
+    private static void compileIntAssign(BinaryExpression expr, CompilerBundle cb, String assignCommand) {
         if (!(expr.left instanceof LValue))
             throw new IllegalArgumentException("Trying to assign to a not LValue: " + expr.left.getClass().getSimpleName());
         ((LValue) expr.left).compileAddress(cb);
         println(cb.sb, "push rax");
         expr.right.compile(cb);
         println(cb.sb, "pop r10");
-        println(cb.sb, "mov [r10], rax");
+        println(cb.sb, assignCommand);
+    }
+
+    private static ReturnHint compileInt32Assign(BinaryExpression expr, CompilerBundle cb, CompileHint hint) {
+        compileIntAssign(expr, cb, "mov [r10], eax");
+        return ReturnHint.DEFAULT_RETURN;
+    }
+
+    private static ReturnHint compileInt16Assign(BinaryExpression expr, CompilerBundle cb, CompileHint hint) {
+        compileIntAssign(expr, cb, "mov [r10], ax");
+        return ReturnHint.DEFAULT_RETURN;
+    }
+
+    private static ReturnHint compileInt8Assign(BinaryExpression expr, CompilerBundle cb, CompileHint hint) {
+        compileIntAssign(expr, cb, "mov [r10], al");
+        return ReturnHint.DEFAULT_RETURN;
+    }
+
+    private static ReturnHint compileInt64Div(BinaryExpression expr, CompilerBundle cb, CompileHint hint) {
+        compileIntOperation(expr, cb, "mov r11, rax");
+        println(cb.sb, "mov rax, r10");
+        println(cb.sb, "xor rdx, rdx");
+        println(cb.sb, "div r11");
+        return ReturnHint.DEFAULT_RETURN;
+    }
+
+    private static ReturnHint compileBoolAnd(BinaryExpression expr, CompilerBundle cb, CompileHint hint) {
+        String labelFalse = cb.nextLabel();
+        String labelAfter = cb.nextLabel();
+        expr.left.compile(cb);
+        println(cb.sb, "test rax, rax");
+        println(cb.sb, "jz " + labelFalse);
+        expr.right.compile(cb);
+        println(cb.sb, "test rax, rax");
+        println(cb.sb, "jz " + labelFalse);
+        println(cb.sb, "mov rax, 1");
+        println(cb.sb, "jmp " + labelAfter);
+        nprintln(cb.sb, labelFalse + ":");
+        println(cb.sb, "mov rax, 0");
+        nprintln(cb.sb, labelAfter + ":");
         return ReturnHint.DEFAULT_RETURN;
     }
 
     @Override
     public Type getType() {
         assertTypeConsistent();
-        return left.getType();
+        switch (op) {
+            case "+":
+            case "-":
+            case "*":
+            case "/":
+            case "=":
+            case "&&":
+                return left.getType();
+            case ">":
+            case "<":
+            case "==":
+            case "!=":
+                return Type.BOOL;
+            default:
+                throw new UnsupportedOperationException("Operation " + op + " is not supported");
+        }
     }
 
     private void assertTypeConsistent() {

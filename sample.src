@@ -1,7 +1,62 @@
-int64 f(int64 x) {
-    int64 a;
-    a = x + x;
-    x = 12;
-    12 = 12;
-    return x;
+extern malloc;
+extern println_int;
+extern print_int;
+extern println;
+extern print_pair;
+
+int64 merge_sort(int64 a, int64 b, int64 l, int64 r) {
+    if (r - l == 1) {
+        return 0;
+    }
+    int64 m = (l + r) / 2;
+    if (r - l > 2)  {
+        merge_sort(a, b, l, m);
+        merge_sort(a, b, m, r);
+    }
+    int64 c1 = l;
+    int64 c2 = m;
+    int64 p = l;
+    for (; c1 < m && c2 < r; 1) {
+        int64 v1 = *(a + 8 * c1);
+        int64 v2 = *(a + 8 * c2);
+        if (v1 < v2) {
+            *(b + 8 * p) = v1;
+            c1 = c1 + 1;
+            p = p + 1;
+        }
+        if (v2 <= v1) {
+            *(b + 8 * p) = v2;
+            c2 = c2 + 1;
+            p = p + 1;
+        }
+    }
+    for (; c1 < m; c1 = c1 + 1) {
+        *(b + 8 * p) = *(a + 8 * c1);
+        p = p + 1;
+    }
+    for (; c2 < r; c2 = c2 + 1) {
+        *(b + 8 * p) = *(a + 8 * c2);
+        p = p + 1;
+    }
+    for (int64 i = l;; i < r; i = i + 1) {
+        *(a + 8 * i) = *(b + 8 * i);
+    }
+    return 0;
+}
+
+int64 f() {
+    int64 N = 1000000;
+    int64 a = malloc(8 * N);
+    int64 b = malloc(8 * N);
+    for (int64 i = 0;; i < N; i = i + 1) {
+        *(a + 8 * i) = (N - i);
+        //print_int(*(a + 8 * i));
+    }
+    //println();
+    merge_sort(a, b, 0, N);
+    //print_pair(0, 0);
+    //for (int64 i = 0;; i < N; i = i + 1) {
+    //    print_int(*(a + 8 * i));
+    //}
+    //println();
 }

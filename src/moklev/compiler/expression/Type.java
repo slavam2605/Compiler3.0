@@ -4,7 +4,7 @@ package moklev.compiler.expression;
  * @author Moklev Vyacheslav
  */
 public enum Type {
-    BOOL(1), INT8(1), INT16(2), INT32(4), INT64(8), FLOAT(4), DOUBLE(8);
+    BOOL(1), INT8(1), INT16(2), INT32(4), INT64(8), FLOAT(4), DOUBLE(8), INT64P(8);
 
     private int sizeOf;
 

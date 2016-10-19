@@ -11,4 +11,8 @@ public class CompilerBundle {
         this.sb = sb;
         labelCount = 0;
     }
+
+    public String nextLabel() {
+        return "L" + labelCount++;
+    }
 }

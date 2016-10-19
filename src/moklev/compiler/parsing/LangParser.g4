@@ -38,11 +38,20 @@ private void nprint(Object s) {
 private void print(Object s) {
     sb.append("    ").append(s);
 }
+
+private static String drop(int count, String s) {
+    return s.substring(0, s.length() - count);
+}
 }
 
 file returns [String s]
-    :   function*
+    :   (function | extern)*
         { $s = cb.sb.toString(); }
+    ;
+
+extern
+    :   'extern' ID ';'
+        { nprintln("extern ", $ID.text); }
     ;
 
 function
@@ -68,11 +77,18 @@ argList returns [List<moklev.compiler.util.Pair<Type, String>> args]
     |
     ;
 
-statement
-    :   TYPE ID ';'
+statement locals [boolean flag, String beginLabel, String endLabel]
+@init {$flag = false;}
+    :   TYPE ID ('=' expression { $flag = true; })? ';'
         { Type type = Type.fromString($TYPE.text);
           int sizeOf = type.getSizeOf();
-          scope.allocateVariable($ID.text, type); }
+          Variable var = scope.allocateVariable($ID.text, type);
+          if ($flag) {
+              new BinaryExpression(
+                  "=", var, $expression.expr
+              ).compile(cb);
+          }
+        }
     |   expression ';'
         { $expression.expr.compile(cb); }
     |   'return' expression ';'
@@ -90,20 +106,41 @@ statement
         { scope.leaveScope();
           nprintln(after + ":"); }
         '}'
+    |   'for'
+        { scope.enterScope(); }
+        '(' statement* ';' e1=expression ';' e2=expression ')' '{'
+            { $beginLabel = cb.nextLabel();
+              $endLabel = cb.nextLabel();
+              nprintln($beginLabel + ":");
+              if ($e1.expr.getType() != Type.BOOL)
+                  throw new IllegalArgumentException("Condition in 'if' is not BOOL: found " + $e1.expr.getType());
+              $e1.expr.compile(cb);
+              println("test rax, rax");
+              println("jz " + $endLabel);
+              scope.enterScope(); }
+            statement*
+            { scope.leaveScope();
+              $e2.expr.compile(cb);
+              println("jmp " + $beginLabel);
+              nprintln($endLabel + ":"); }
+        '}' { scope.leaveScope(); }
     ;
 
 expression returns [Expression expr]
     :   INT64_LITERAL { $expr = new Int64Literal($INT64_LITERAL.text); }
-    // TODO not only int64 arguments
-    // TODO save volatile registers
+    |   INT32_LITERAL { $expr = new Int32Literal(drop(1, $INT32_LITERAL.text)); }
+    |   INT16_LITERAL { $expr = new Int16Literal(drop(1, $INT16_LITERAL.text)); }
+    |   INT8_LITERAL  { $expr = new Int8Literal (drop(1, $INT8_LITERAL.text)); }
     |   ID '(' exprList ')' { $expr = new FunctionCall($ID.text, $exprList.list); }
     |   ID { $expr = scope.getVariable($ID.text); }
     |   '(' e1=expression ')' { $expr = $e1.expr; }
-    |   '-' expression
-    |   '!' expression
+    |   '-' e1=expression
+    |   '!' e1=expression
+    |   '*' e1=expression { $expr = new Dereference($e1.expr); }
     |   e1=expression op=('*'|'/') e2=expression            { $expr = new BinaryExpression($op.text, $e1.expr, $e2.expr); }
     |   e1=expression op=('+'|'-') e2=expression            { $expr = new BinaryExpression($op.text, $e1.expr, $e2.expr); }
-    |   e1=expression op=('<'|'>'|'=='|'!=') e2=expression  { $expr = new BinaryExpression($op.text, $e1.expr, $e2.expr); }
+    |   e1=expression
+        op=('<'|'>'|'=='|'!='|'>='|'<=') e2=expression      { $expr = new BinaryExpression($op.text, $e1.expr, $e2.expr); }
     |   e1=expression op='&&' e2=expression                 { $expr = new BinaryExpression($op.text, $e1.expr, $e2.expr); }
     |   e1=expression op='||' e2=expression                 { $expr = new BinaryExpression($op.text, $e1.expr, $e2.expr); }
     |   <assoc=right> e1=expression op='=' e2=expression    { $expr = new BinaryExpression($op.text, $e1.expr, $e2.expr); }
