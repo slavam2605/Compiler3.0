@@ -16,17 +16,11 @@ merge_sort:
     mov [rbp - 24], rdx
     sub rsp, 8
     mov [rbp - 32], rcx
-    mov rax, [rbp - 32]
-    push rax
-    mov rax, [rbp - 24]
-    pop r10
-    mov r11, rax
-    mov rax, r10
-    sub rax, r11
-    push rax
-    mov rax, 1
-    pop r10
-    cmp r10, rax
+    mov r11, [rbp - 32]
+    mov rdi, [rbp - 24]
+    sub r11, rdi
+    mov rdi, 1
+    cmp r11, rdi
     je L1
 L0:
     xor rax, rax
@@ -42,30 +36,19 @@ L2:
     ret
 L3:
     sub rsp, 8
-    mov rax, [rbp - 24]
-    push rax
-    mov rax, [rbp - 32]
-    pop r10
-    add rax, r10
-    push rax
-    mov rax, 2
-    pop r10
-    mov r11, rax
-    mov rax, r10
+    mov r11, [rbp - 24]
+    mov rdi, [rbp - 32]
+    add r11, rdi
+    mov rdi, 2
+    mov rax, r11
     xor rdx, rdx
-    div r11
+    div rdi
     mov [rbp - 40], rax
-    mov rax, [rbp - 32]
-    push rax
-    mov rax, [rbp - 24]
-    pop r10
-    mov r11, rax
-    mov rax, r10
-    sub rax, r11
-    push rax
-    mov rax, 2
-    pop r10
-    cmp r10, rax
+    mov r11, [rbp - 32]
+    mov rdi, [rbp - 24]
+    sub r11, rdi
+    mov rdi, 2
+    cmp r11, rdi
     jg L5
 L4:
     xor rax, rax
@@ -75,48 +58,35 @@ L5:
 L6:
     test rax, rax
     jz L7
-    mov rax, [rbp - 40]
-    push rax
-    mov rax, [rbp - 24]
-    push rax
-    mov rax, [rbp - 16]
-    push rax
-    mov rax, [rbp - 8]
-    push rax
-    pop rdi
-    pop rsi
-    pop rdx
-    pop rcx
+    mov rcx, [rbp - 40]
+    mov r11, [rbp - 24]
+    mov rdx, r11
+    mov rsi, [rbp - 16]
+    mov rdi, [rbp - 8]
     call merge_sort
-    mov rax, [rbp - 32]
-    push rax
-    mov rax, [rbp - 40]
-    push rax
-    mov rax, [rbp - 16]
-    push rax
-    mov rax, [rbp - 8]
-    push rax
-    pop rdi
-    pop rsi
-    pop rdx
-    pop rcx
+    mov rcx, [rbp - 32]
+    mov r11, [rbp - 40]
+    mov rdx, r11
+    mov rsi, [rbp - 16]
+    mov rdi, [rbp - 8]
     call merge_sort
 L7:
     sub rsp, 8
-    mov rax, [rbp - 24]
-    mov [rbp - 48], rax
+    mov r11, [rbp - 24]
+    mov [rbp - 48], r11
+    mov rax, r11
     sub rsp, 8
-    mov rax, [rbp - 40]
-    mov [rbp - 56], rax
+    mov r11, [rbp - 40]
+    mov [rbp - 56], r11
+    mov rax, r11
     sub rsp, 8
-    mov rax, [rbp - 24]
-    mov [rbp - 64], rax
+    mov r11, [rbp - 24]
+    mov [rbp - 64], r11
+    mov rax, r11
 L8:
-    mov rax, [rbp - 48]
-    push rax
-    mov rax, [rbp - 40]
-    pop r10
-    cmp r10, rax
+    mov r11, [rbp - 48]
+    mov rdi, [rbp - 40]
+    cmp r11, rdi
     jl L13
 L12:
     xor rax, rax
@@ -126,11 +96,9 @@ L13:
 L14:
     test rax, rax
     jz L10
-    mov rax, [rbp - 56]
-    push rax
-    mov rax, [rbp - 32]
-    pop r10
-    cmp r10, rax
+    mov r11, [rbp - 56]
+    mov rdi, [rbp - 32]
+    cmp r11, rdi
     jl L16
 L15:
     xor rax, rax
@@ -148,34 +116,28 @@ L11:
     test rax, rax
     jz L9
     sub rsp, 8
-    mov rax, [rbp - 8]
-    push rax
-    mov rax, 8
-    push rax
-    mov rax, [rbp - 48]
-    pop r10
-    mul r10
-    pop r10
-    add rax, r10
-    mov rax, [rax]
-    mov [rbp - 72], rax
+    mov r11, [rbp - 8]
+    mov rdi, 8
+    mov rsi, [rbp - 48]
+    mov rax, rdi
+    mul rsi
+    add r11, rax
+    mov r11, [r11]
+    mov [rbp - 72], r11
+    mov rax, r11
     sub rsp, 8
-    mov rax, [rbp - 8]
-    push rax
-    mov rax, 8
-    push rax
-    mov rax, [rbp - 56]
-    pop r10
-    mul r10
-    pop r10
-    add rax, r10
-    mov rax, [rax]
-    mov [rbp - 80], rax
-    mov rax, [rbp - 72]
-    push rax
-    mov rax, [rbp - 80]
-    pop r10
-    cmp r10, rax
+    mov r11, [rbp - 8]
+    mov rdi, 8
+    mov rsi, [rbp - 56]
+    mov rax, rdi
+    mul rsi
+    add r11, rax
+    mov r11, [r11]
+    mov [rbp - 80], r11
+    mov rax, r11
+    mov r11, [rbp - 72]
+    mov rdi, [rbp - 80]
+    cmp r11, rdi
     jl L19
 L18:
     xor rax, rax
@@ -185,37 +147,29 @@ L19:
 L20:
     test rax, rax
     jz L21
-    mov rax, [rbp - 16]
-    push rax
-    mov rax, 8
-    push rax
-    mov rax, [rbp - 64]
-    pop r10
-    mul r10
-    pop r10
-    add rax, r10
-    push rax
-    mov rax, [rbp - 72]
-    pop r10
-    mov [r10], rax
-    mov rax, [rbp - 48]
-    push rax
-    mov rax, 1
-    pop r10
-    add rax, r10
-    mov [rbp - 48], rax
-    mov rax, [rbp - 64]
-    push rax
-    mov rax, 1
-    pop r10
-    add rax, r10
-    mov [rbp - 64], rax
+    mov r11, [rbp - 16]
+    mov rdi, 8
+    mov rsi, [rbp - 64]
+    mov rax, rdi
+    mul rsi
+    add r11, rax
+    mov rdi, [rbp - 72]
+    mov [r11], rdi
+    mov rax, rdi
+    mov r11, [rbp - 48]
+    mov rdi, 1
+    add r11, rdi
+    mov [rbp - 48], r11
+    mov rax, r11
+    mov r11, [rbp - 64]
+    mov rdi, 1
+    add r11, rdi
+    mov [rbp - 64], r11
+    mov rax, r11
 L21:
-    mov rax, [rbp - 80]
-    push rax
-    mov rax, [rbp - 72]
-    pop r10
-    cmp r10, rax
+    mov r11, [rbp - 80]
+    mov rdi, [rbp - 72]
+    cmp r11, rdi
     jle L23
 L22:
     xor rax, rax
@@ -225,42 +179,34 @@ L23:
 L24:
     test rax, rax
     jz L25
-    mov rax, [rbp - 16]
-    push rax
-    mov rax, 8
-    push rax
-    mov rax, [rbp - 64]
-    pop r10
-    mul r10
-    pop r10
-    add rax, r10
-    push rax
-    mov rax, [rbp - 80]
-    pop r10
-    mov [r10], rax
-    mov rax, [rbp - 56]
-    push rax
-    mov rax, 1
-    pop r10
-    add rax, r10
-    mov [rbp - 56], rax
-    mov rax, [rbp - 64]
-    push rax
-    mov rax, 1
-    pop r10
-    add rax, r10
-    mov [rbp - 64], rax
+    mov r11, [rbp - 16]
+    mov rdi, 8
+    mov rsi, [rbp - 64]
+    mov rax, rdi
+    mul rsi
+    add r11, rax
+    mov rdi, [rbp - 80]
+    mov [r11], rdi
+    mov rax, rdi
+    mov r11, [rbp - 56]
+    mov rdi, 1
+    add r11, rdi
+    mov [rbp - 56], r11
+    mov rax, r11
+    mov r11, [rbp - 64]
+    mov rdi, 1
+    add r11, rdi
+    mov [rbp - 64], r11
+    mov rax, r11
 L25:
     add rsp, 16
     mov rax, 1
     jmp L8
 L9:
 L26:
-    mov rax, [rbp - 48]
-    push rax
-    mov rax, [rbp - 40]
-    pop r10
-    cmp r10, rax
+    mov r11, [rbp - 48]
+    mov rdi, [rbp - 40]
+    cmp r11, rdi
     jl L29
 L28:
     xor rax, rax
@@ -270,48 +216,37 @@ L29:
 L30:
     test rax, rax
     jz L27
-    mov rax, [rbp - 16]
-    push rax
-    mov rax, 8
-    push rax
-    mov rax, [rbp - 64]
-    pop r10
-    mul r10
-    pop r10
-    add rax, r10
-    push rax
-    mov rax, [rbp - 8]
-    push rax
-    mov rax, 8
-    push rax
-    mov rax, [rbp - 48]
-    pop r10
-    mul r10
-    pop r10
-    add rax, r10
-    mov rax, [rax]
-    pop r10
-    mov [r10], rax
-    mov rax, [rbp - 64]
-    push rax
-    mov rax, 1
-    pop r10
-    add rax, r10
-    mov [rbp - 64], rax
-    mov rax, [rbp - 48]
-    push rax
-    mov rax, 1
-    pop r10
-    add rax, r10
-    mov [rbp - 48], rax
+    mov r11, [rbp - 16]
+    mov rdi, 8
+    mov rsi, [rbp - 64]
+    mov rax, rdi
+    mul rsi
+    add r11, rax
+    mov rdi, [rbp - 8]
+    mov rsi, 8
+    mov rcx, [rbp - 48]
+    mov rax, rsi
+    mul rcx
+    add rdi, rax
+    mov rdi, [rdi]
+    mov [r11], rdi
+    mov rax, rdi
+    mov r11, [rbp - 64]
+    mov rdi, 1
+    add r11, rdi
+    mov [rbp - 64], r11
+    mov rax, r11
+    mov r11, [rbp - 48]
+    mov rdi, 1
+    add r11, rdi
+    mov [rbp - 48], r11
+    mov rax, r11
     jmp L26
 L27:
 L31:
-    mov rax, [rbp - 56]
-    push rax
-    mov rax, [rbp - 32]
-    pop r10
-    cmp r10, rax
+    mov r11, [rbp - 56]
+    mov rdi, [rbp - 32]
+    cmp r11, rdi
     jl L34
 L33:
     xor rax, rax
@@ -321,51 +256,41 @@ L34:
 L35:
     test rax, rax
     jz L32
-    mov rax, [rbp - 16]
-    push rax
-    mov rax, 8
-    push rax
-    mov rax, [rbp - 64]
-    pop r10
-    mul r10
-    pop r10
-    add rax, r10
-    push rax
-    mov rax, [rbp - 8]
-    push rax
-    mov rax, 8
-    push rax
-    mov rax, [rbp - 56]
-    pop r10
-    mul r10
-    pop r10
-    add rax, r10
-    mov rax, [rax]
-    pop r10
-    mov [r10], rax
-    mov rax, [rbp - 64]
-    push rax
-    mov rax, 1
-    pop r10
-    add rax, r10
-    mov [rbp - 64], rax
-    mov rax, [rbp - 56]
-    push rax
-    mov rax, 1
-    pop r10
-    add rax, r10
-    mov [rbp - 56], rax
+    mov r11, [rbp - 16]
+    mov rdi, 8
+    mov rsi, [rbp - 64]
+    mov rax, rdi
+    mul rsi
+    add r11, rax
+    mov rdi, [rbp - 8]
+    mov rsi, 8
+    mov rcx, [rbp - 56]
+    mov rax, rsi
+    mul rcx
+    add rdi, rax
+    mov rdi, [rdi]
+    mov [r11], rdi
+    mov rax, rdi
+    mov r11, [rbp - 64]
+    mov rdi, 1
+    add r11, rdi
+    mov [rbp - 64], r11
+    mov rax, r11
+    mov r11, [rbp - 56]
+    mov rdi, 1
+    add r11, rdi
+    mov [rbp - 56], r11
+    mov rax, r11
     jmp L31
 L32:
     sub rsp, 8
-    mov rax, [rbp - 24]
-    mov [rbp - 72], rax
+    mov r11, [rbp - 24]
+    mov [rbp - 72], r11
+    mov rax, r11
 L36:
-    mov rax, [rbp - 72]
-    push rax
-    mov rax, [rbp - 32]
-    pop r10
-    cmp r10, rax
+    mov r11, [rbp - 72]
+    mov rdi, [rbp - 32]
+    cmp r11, rdi
     jl L39
 L38:
     xor rax, rax
@@ -375,34 +300,26 @@ L39:
 L40:
     test rax, rax
     jz L37
-    mov rax, [rbp - 8]
-    push rax
-    mov rax, 8
-    push rax
-    mov rax, [rbp - 72]
-    pop r10
-    mul r10
-    pop r10
-    add rax, r10
-    push rax
-    mov rax, [rbp - 16]
-    push rax
-    mov rax, 8
-    push rax
-    mov rax, [rbp - 72]
-    pop r10
-    mul r10
-    pop r10
-    add rax, r10
-    mov rax, [rax]
-    pop r10
-    mov [r10], rax
-    mov rax, [rbp - 72]
-    push rax
-    mov rax, 1
-    pop r10
-    add rax, r10
-    mov [rbp - 72], rax
+    mov r11, [rbp - 8]
+    mov rdi, 8
+    mov rsi, [rbp - 72]
+    mov rax, rdi
+    mul rsi
+    add r11, rax
+    mov rdi, [rbp - 16]
+    mov rsi, 8
+    mov rcx, [rbp - 72]
+    mov rax, rsi
+    mul rcx
+    add rdi, rax
+    mov rdi, [rdi]
+    mov [r11], rdi
+    mov rax, rdi
+    mov r11, [rbp - 72]
+    mov rdi, 1
+    add r11, rdi
+    mov [rbp - 72], r11
+    mov rax, r11
     jmp L36
 L37:
     add rsp, 8
@@ -422,31 +339,20 @@ f:
     sub rsp, 8
     mov [rbp - 16], rsi
     sub rsp, 8
-    mov rax, 8
-    push rax
-    mov rax, [rbp - 16]
-    pop r10
-    mul r10
-    push rax
-    pop rdi
+    mov r11, 8
+    mov rdi, [rbp - 16]
+    mov rax, r11
+    mul rdi
+    mov rdi, rax
     call malloc
     mov [rbp - 24], rax
-    mov rax, [rbp - 16]
-    push rax
-    mov rax, 0
-    push rax
-    mov rax, [rbp - 24]
-    push rax
-    mov rax, [rbp - 8]
-    push rax
-    pop rdi
-    pop rsi
-    pop rdx
-    pop rcx
+    mov rcx, [rbp - 16]
+    mov r11, 0
+    mov rdx, r11
+    mov rsi, [rbp - 24]
+    mov rdi, [rbp - 8]
     call merge_sort
-    mov rax, [rbp - 24]
-    push rax
-    pop rdi
+    mov rdi, [rbp - 24]
     call free
     add rsp, 24
     pop rbp

@@ -1,5 +1,6 @@
 package moklev.compiler.parsing;
 
+import moklev.compiler.expression.CompileHint;
 import moklev.compiler.expression.Type;
 import moklev.compiler.expression.Variable;
 import moklev.compiler.util.CompilerBundle;
@@ -16,7 +17,7 @@ import static moklev.compiler.util.StringBuilderPrinter.*;
  */
 public class ParserUtils {
     // TODO not only int64 arguments
-    static void compileFunctionArguments(CompilerBundle cb, List<Pair<Type, String>> args,
+    static void compileFunctionArguments(CompilerBundle cb, CompileHint hint, List<Pair<Type, String>> args,
                                          Scope scope, String[] intArgumentRegister) {
         List<Pair<Type, String>> intArgs = new ArrayList<>();
         for (Pair<Type, String> pair: args) {

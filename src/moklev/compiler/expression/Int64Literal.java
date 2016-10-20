@@ -5,6 +5,7 @@ import moklev.compiler.util.ParseException;
 import static moklev.compiler.util.StringBuilderPrinter.*;
 
 import java.math.BigInteger;
+import java.util.Optional;
 
 /**
  * @author Moklev Vyacheslav
@@ -22,8 +23,14 @@ public class Int64Literal implements Expression {
 
     @Override
     public ReturnHint compile(CompilerBundle cb, CompileHint hint) {
-        println(cb.sb, "mov rax, " + value);
-        return ReturnHint.DEFAULT_RETURN;
+        Optional<Register> reg = hint.acquireReg();
+        if (hint.isDefaultReturnFlag() || !reg.isPresent()) {
+            println(cb.sb, "mov rax, " + value);
+            return ReturnHint.DEFAULT_RETURN;
+        } else {
+            println(cb.sb, "mov ", reg.get(), ", " + value);
+            return new ReturnHint(reg.get());
+        }
     }
 
     @Override

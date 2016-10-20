@@ -1,0 +1,3 @@
+* rdx is not allocated by hint.acquire, so while call need to move:
+    mov r11, ?
+    mov rdx, r11

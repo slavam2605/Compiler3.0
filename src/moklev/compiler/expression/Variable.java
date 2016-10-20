@@ -2,6 +2,8 @@ package moklev.compiler.expression;
 
 import moklev.compiler.util.CompilerBundle;
 
+import java.util.Optional;
+
 import static moklev.compiler.util.StringBuilderPrinter.*;
 
 /**
@@ -30,22 +32,36 @@ public class Variable implements LValue {
     public ReturnHint compile(CompilerBundle cb, CompileHint hint) {
         // TODO support more types
         switch (type) {
+            // FIXME optimize 8-32 bits
             case INT8:
             case INT16:
             case INT32:
-            case INT64:
                 println(cb.sb, "mov " + getIntReturnRegister(type) + ", [rbp - ", offset, "]");
-                break;
+                return ReturnHint.DEFAULT_RETURN;
+            case INT64:
+                Optional<Register> reg = hint.acquireRegPref();
+                if (hint.isDefaultReturnFlag() || !reg.isPresent()) {
+                    println(cb.sb, "mov rax, [rbp - ", offset, "]");
+                    return ReturnHint.DEFAULT_RETURN;
+                } else {
+                    println(cb.sb, "mov ", reg.get(), ", [rbp - ", offset, "]");
+                    return new ReturnHint(reg.get());
+                }
             default:
                 throw new UnsupportedOperationException("Type " + type + " is not supported");
         }
-        return ReturnHint.DEFAULT_RETURN;
     }
 
     @Override
     public ReturnHint compileAddress(CompilerBundle cb, CompileHint hint) {
-        println(cb.sb, "lea rax, [rbp - ", offset, "]");
-        return ReturnHint.DEFAULT_RETURN;
+        Optional<Register> reg = hint.acquireReg();
+        if (hint.isDefaultReturnFlag() || !reg.isPresent()) {
+            println(cb.sb, "lea rax, [rbp - ", offset, "]");
+            return ReturnHint.DEFAULT_RETURN;
+        } else {
+            println(cb.sb, "lea ", reg.get(), ", [rbp - ", offset, "]");
+            return new ReturnHint(reg.get());
+        }
     }
 
     private String getIntReturnRegister(Type type) {

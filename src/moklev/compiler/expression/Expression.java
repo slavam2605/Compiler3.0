@@ -9,7 +9,7 @@ public interface Expression {
     ReturnHint compile(CompilerBundle cb, CompileHint hint);
     Type getType();
 
-    default ReturnHint compile(CompilerBundle cb) {
-        return compile(cb, CompileHint.EMPTY_HINT);
-    }
+//    default ReturnHint compile(CompilerBundle cb) {
+//        return compile(cb, CompileHint.EMPTY_HINT);
+//    }
 }

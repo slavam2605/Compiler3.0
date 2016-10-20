@@ -13,6 +13,7 @@ import static moklev.compiler.parsing.ParserUtils.*;
 private StringBuilder sb = new StringBuilder();
 private CompilerBundle cb = new CompilerBundle(sb);
 private Scope scope = new Scope(sb);
+private CompileHint globalHint = new CompileHint(false, true, null);
 
 private static final String[] intArgumentRegister = new String[] {
     "rdi", "rsi", "rdx", "rcx", "r8", "r9"
@@ -59,7 +60,7 @@ function
             { nprintln("global ", $ID.text);
               nprintln($ID.text, ":");
               scope.enterScope();
-              compileFunctionArguments(cb, $argList.args, scope, intArgumentRegister);
+              compileFunctionArguments(cb, globalHint.clone(), $argList.args, scope, intArgumentRegister);
             }
             statement*
             { scope.leaveScope();
@@ -86,18 +87,18 @@ statement locals [boolean flag, String beginLabel, String endLabel]
           if ($flag) {
               new BinaryExpression(
                   "=", var, $expression.expr
-              ).compile(cb);
+              ).compile(cb, globalHint.clone());
           }
         }
     |   expression ';'
-        { $expression.expr.compile(cb); }
+        { $expression.expr.compile(cb, globalHint.clone()); }
     |   'return' expression ';'
-        { $expression.expr.compile(cb);
+        { $expression.expr.compile(cb, globalHint.clone());
           scope.breakAllScopes();
           println("pop rbp");
           println("ret"); }
     |   'if' '(' expression ')' '{'
-        { $expression.expr.compile(cb);
+        { $expression.expr.compile(cb, globalHint.clone());
           println("test rax, rax");
           String after = "L" + cb.labelCount++;
           println("jz " + after);
@@ -114,13 +115,13 @@ statement locals [boolean flag, String beginLabel, String endLabel]
               nprintln($beginLabel + ":");
               if ($e1.expr.getType() != Type.BOOL)
                   throw new IllegalArgumentException("Condition in 'if' is not BOOL: found " + $e1.expr.getType());
-              $e1.expr.compile(cb);
+              $e1.expr.compile(cb, globalHint.clone());
               println("test rax, rax");
               println("jz " + $endLabel);
               scope.enterScope(); }
             statement*
             { scope.leaveScope();
-              $e2.expr.compile(cb);
+              $e2.expr.compile(cb, globalHint.clone());
               println("jmp " + $beginLabel);
               nprintln($endLabel + ":"); }
         '}' { scope.leaveScope(); }

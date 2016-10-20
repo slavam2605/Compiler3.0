@@ -1,6 +1,10 @@
 package moklev.compiler.expression;
 
 import moklev.compiler.util.CompilerBundle;
+
+import java.util.Optional;
+
+import static moklev.compiler.expression.Register.RAX;
 import static moklev.compiler.util.StringBuilderPrinter.*;
 
 /**
@@ -15,9 +19,14 @@ public class Dereference implements LValue {
 
     @Override
     public ReturnHint compile(CompilerBundle cb, CompileHint hint) {
-        innerExpr.compile(cb);
-        println(cb.sb, "mov rax, [rax]");
-        return ReturnHint.DEFAULT_RETURN;
+        ReturnHint returnHint = innerExpr.compile(cb, hint.cloneArbitraryReturn());
+        if (hint.isDefaultReturnFlag()) {
+            println(cb.sb, "mov rax, [", returnHint.getReturnReg(), "]");
+            return ReturnHint.DEFAULT_RETURN;
+        } else {
+            println(cb.sb, "mov ", returnHint.getReturnReg(), ", [", returnHint.getReturnReg(), "]");
+            return new ReturnHint(returnHint.getReturnReg());
+        }
     }
 
     @Override
@@ -33,6 +42,13 @@ public class Dereference implements LValue {
 
     @Override
     public ReturnHint compileAddress(CompilerBundle cb, CompileHint hint) {
-        return innerExpr.compile(cb);
+        ReturnHint returnHint = innerExpr.compile(cb, hint.cloneArbitraryReturn());
+        if (hint.isDefaultReturnFlag()) {
+            if (returnHint.getReturnReg() != RAX)
+                println(cb.sb, "mov rax, ", returnHint.getReturnReg());
+            return ReturnHint.DEFAULT_RETURN;
+        } else {
+            return new ReturnHint(returnHint.getReturnReg());
+        }
     }
 }

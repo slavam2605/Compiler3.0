@@ -4,15 +4,18 @@ import moklev.compiler.util.CompilerBundle;
 
 import static moklev.compiler.util.StringBuilderPrinter.*;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static moklev.compiler.expression.Register.*;
 
 /**
  * @author Vyacheslav Moklev
  */
 public class FunctionCall implements Expression {
-    private static final String[] intArgumentRegister = new String[] {
-            "rdi", "rsi", "rdx", "rcx", "r8", "r9"
+    private static final Register[] intArgumentRegister = new Register[] {
+            RDI, RSI, RDX, RCX, R8, R9
     };
 
     private String funcName;
@@ -36,17 +39,35 @@ public class FunctionCall implements Expression {
         // FIXME
         // TODO not only int64 arguments
         // TODO save volatile registers
-        Collections.reverse(list);
-        for (Expression expr: list) {
-            expr.compile(cb);
-            println(cb.sb, "push rax");
+        List<Register> toRestore = new ArrayList<>();
+        for (int i = 5; i >= 0; i--) {
+            if (i >= list.size())
+                continue;
+            if (!hint.availableReg(intArgumentRegister[i]) && hint.mustBeAvailable(intArgumentRegister[i])) {
+                toRestore.add(intArgumentRegister[i]);
+                println(cb.sb, "push ", intArgumentRegister[i]);
+            }
         }
-        for (int i = 0; i < Math.min(6, list.size()); i++) {
-            println(cb.sb, "pop " + intArgumentRegister[i]);
+        for (int i = list.size() - 1; i >= 6; i--) {
+            ReturnHint returnHint = list.get(i).compile(cb, hint.cloneArbitraryReturn());
+            println(cb.sb, "push ", returnHint.getReturnReg());
+        }
+        for (int i = 5; i >= 0; i--) {
+            if (i >= list.size())
+                continue;
+            ReturnHint returnHint = list.get(i).compile(cb, hint
+                    .cloneArbitraryReturn()
+                    .clonePreferredReg(intArgumentRegister[i]));
+            hint.acquireIfAvailable(intArgumentRegister[i]);
+            if (returnHint.getReturnReg() != intArgumentRegister[i])
+                println(cb.sb, "mov ", intArgumentRegister[i], ", ", returnHint.getReturnReg());
         }
         println(cb.sb, "call " + funcName);
         if (list.size() > 6)
             println(cb.sb, "add rsp, ", 8 * (list.size() - 6));
+        for (int i = toRestore.size() - 1; i >= 0; i--) {
+            println(cb.sb, "pop ", toRestore.get(i));
+        }
         return ReturnHint.DEFAULT_RETURN;
     }
 
