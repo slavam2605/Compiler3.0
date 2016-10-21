@@ -21,20 +21,14 @@ merge_sort:
     sub r11, rdi
     mov rdi, 1
     cmp r11, rdi
-    je L1
+    je L0
+    jmp L1
 L0:
-    xor rax, rax
-    jmp L2
-L1:
-    mov rax, 1
-L2:
-    test rax, rax
-    jz L3
     mov rax, 0
     add rsp, 32
     pop rbp
     ret
-L3:
+L1:
     sub rsp, 8
     mov r11, [rbp - 24]
     mov rdi, [rbp - 32]
@@ -49,15 +43,9 @@ L3:
     sub r11, rdi
     mov rdi, 2
     cmp r11, rdi
-    jg L5
-L4:
-    xor rax, rax
-    jmp L6
-L5:
-    mov rax, 1
-L6:
-    test rax, rax
-    jz L7
+    jg L2
+    jmp L3
+L2:
     mov rcx, [rbp - 40]
     mov r11, [rbp - 24]
     mov rdx, r11
@@ -70,7 +58,7 @@ L6:
     mov rsi, [rbp - 16]
     mov rdi, [rbp - 8]
     call merge_sort
-L7:
+L3:
     sub rsp, 8
     mov r11, [rbp - 24]
     mov [rbp - 48], r11
@@ -83,38 +71,19 @@ L7:
     mov r11, [rbp - 24]
     mov [rbp - 64], r11
     mov rax, r11
-L8:
+L4:
     mov r11, [rbp - 48]
     mov rdi, [rbp - 40]
     cmp r11, rdi
-    jl L13
-L12:
-    xor rax, rax
-    jmp L14
-L13:
-    mov rax, 1
-L14:
-    test rax, rax
-    jz L10
-    mov r11, [rbp - 56]
-    mov rdi, [rbp - 32]
-    cmp r11, rdi
-    jl L16
-L15:
-    xor rax, rax
-    jmp L17
-L16:
-    mov rax, 1
-L17:
-    test rax, rax
-    jz L10
-    mov rax, 1
-    jmp L11
-L10:
-    mov rax, 0
-L11:
-    test rax, rax
-    jz L9
+    jl L7
+    jmp L5
+L7:
+    mov rdi, [rbp - 56]
+    mov rsi, [rbp - 32]
+    cmp rdi, rsi
+    jl L6
+    jmp L5
+L6:
     sub rsp, 8
     mov r11, [rbp - 8]
     mov rdi, 8
@@ -138,15 +107,9 @@ L11:
     mov r11, [rbp - 72]
     mov rdi, [rbp - 80]
     cmp r11, rdi
-    jl L19
-L18:
-    xor rax, rax
-    jmp L20
-L19:
-    mov rax, 1
-L20:
-    test rax, rax
-    jz L21
+    jl L8
+    jmp L9
+L8:
     mov r11, [rbp - 16]
     mov rdi, 8
     mov rsi, [rbp - 64]
@@ -166,19 +129,13 @@ L20:
     add r11, rdi
     mov [rbp - 64], r11
     mov rax, r11
-L21:
+L9:
     mov r11, [rbp - 80]
     mov rdi, [rbp - 72]
     cmp r11, rdi
-    jle L23
-L22:
-    xor rax, rax
-    jmp L24
-L23:
-    mov rax, 1
-L24:
-    test rax, rax
-    jz L25
+    jle L10
+    jmp L11
+L10:
     mov r11, [rbp - 16]
     mov rdi, 8
     mov rsi, [rbp - 64]
@@ -198,24 +155,18 @@ L24:
     add r11, rdi
     mov [rbp - 64], r11
     mov rax, r11
-L25:
+L11:
     add rsp, 16
     mov rax, 1
-    jmp L8
-L9:
-L26:
+    jmp L4
+L5:
+L12:
     mov r11, [rbp - 48]
     mov rdi, [rbp - 40]
     cmp r11, rdi
-    jl L29
-L28:
-    xor rax, rax
-    jmp L30
-L29:
-    mov rax, 1
-L30:
-    test rax, rax
-    jz L27
+    jl L14
+    jmp L13
+L14:
     mov r11, [rbp - 16]
     mov rdi, 8
     mov rsi, [rbp - 64]
@@ -241,21 +192,15 @@ L30:
     add r11, rdi
     mov [rbp - 48], r11
     mov rax, r11
-    jmp L26
-L27:
-L31:
+    jmp L12
+L13:
+L15:
     mov r11, [rbp - 56]
     mov rdi, [rbp - 32]
     cmp r11, rdi
-    jl L34
-L33:
-    xor rax, rax
-    jmp L35
-L34:
-    mov rax, 1
-L35:
-    test rax, rax
-    jz L32
+    jl L17
+    jmp L16
+L17:
     mov r11, [rbp - 16]
     mov rdi, 8
     mov rsi, [rbp - 64]
@@ -281,25 +226,19 @@ L35:
     add r11, rdi
     mov [rbp - 56], r11
     mov rax, r11
-    jmp L31
-L32:
+    jmp L15
+L16:
     sub rsp, 8
     mov r11, [rbp - 24]
     mov [rbp - 72], r11
     mov rax, r11
-L36:
+L18:
     mov r11, [rbp - 72]
     mov rdi, [rbp - 32]
     cmp r11, rdi
-    jl L39
-L38:
-    xor rax, rax
-    jmp L40
-L39:
-    mov rax, 1
-L40:
-    test rax, rax
-    jz L37
+    jl L20
+    jmp L19
+L20:
     mov r11, [rbp - 8]
     mov rdi, 8
     mov rsi, [rbp - 72]
@@ -320,8 +259,8 @@ L40:
     add r11, rdi
     mov [rbp - 72], r11
     mov rax, r11
-    jmp L36
-L37:
+    jmp L18
+L19:
     add rsp, 8
     mov rax, 0
     add rsp, 64

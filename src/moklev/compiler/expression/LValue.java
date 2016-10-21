@@ -8,8 +8,4 @@ import moklev.compiler.util.CompilerBundle;
  */
 public interface LValue extends Expression {
     ReturnHint compileAddress(CompilerBundle cb, CompileHint hint);
-
-//    default ReturnHint compileAddress(CompilerBundle cb) {
-//        return compileAddress(cb, CompileHint.EMPTY_HINT);
-//    }
 }

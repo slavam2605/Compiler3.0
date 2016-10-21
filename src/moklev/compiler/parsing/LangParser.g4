@@ -15,6 +15,10 @@ private CompilerBundle cb = new CompilerBundle(sb);
 private Scope scope = new Scope(sb);
 private CompileHint globalHint = new CompileHint(false, true, null);
 
+{
+    cb.setScope(scope);
+}
+
 private static final String[] intArgumentRegister = new String[] {
     "rdi", "rsi", "rdx", "rcx", "r8", "r9"
 };
@@ -98,32 +102,32 @@ statement locals [boolean flag, String beginLabel, String endLabel]
           println("pop rbp");
           println("ret"); }
     |   'if' '(' expression ')' '{'
-        { $expression.expr.compile(cb, globalHint.clone());
-          println("test rax, rax");
-          String after = "L" + cb.labelCount++;
-          println("jz " + after);
+        { String inside = cb.nextLabel();
+          String after = cb.nextLabel();
+          ((BooleanExpression) $expression.expr).compileBranch(cb, globalHint.clone(), inside, after);
+          nprintln(inside, ":");
           scope.enterScope(); }
             statement*
         { scope.leaveScope();
-          nprintln(after + ":"); }
+          nprintln(after, ":"); }
         '}'
     |   'for'
         { scope.enterScope(); }
         '(' statement* ';' e1=expression ';' e2=expression ')' '{'
             { $beginLabel = cb.nextLabel();
               $endLabel = cb.nextLabel();
-              nprintln($beginLabel + ":");
+              String insideLabel = cb.nextLabel();
+              nprintln($beginLabel, ":");
               if ($e1.expr.getType() != Type.BOOL)
                   throw new IllegalArgumentException("Condition in 'if' is not BOOL: found " + $e1.expr.getType());
-              $e1.expr.compile(cb, globalHint.clone());
-              println("test rax, rax");
-              println("jz " + $endLabel);
+              ((BooleanExpression) $e1.expr).compileBranch(cb, globalHint.clone(), insideLabel, $endLabel);
+              nprintln(insideLabel, ":");
               scope.enterScope(); }
             statement*
             { scope.leaveScope();
               $e2.expr.compile(cb, globalHint.clone());
               println("jmp " + $beginLabel);
-              nprintln($endLabel + ":"); }
+              nprintln($endLabel, ":"); }
         '}' { scope.leaveScope(); }
     ;
 
@@ -141,9 +145,9 @@ expression returns [Expression expr]
     |   e1=expression op=('*'|'/') e2=expression            { $expr = new BinaryExpression($op.text, $e1.expr, $e2.expr); }
     |   e1=expression op=('+'|'-') e2=expression            { $expr = new BinaryExpression($op.text, $e1.expr, $e2.expr); }
     |   e1=expression
-        op=('<'|'>'|'=='|'!='|'>='|'<=') e2=expression      { $expr = new BinaryExpression($op.text, $e1.expr, $e2.expr); }
-    |   e1=expression op='&&' e2=expression                 { $expr = new BinaryExpression($op.text, $e1.expr, $e2.expr); }
-    |   e1=expression op='||' e2=expression                 { $expr = new BinaryExpression($op.text, $e1.expr, $e2.expr); }
+        op=('<'|'>'|'=='|'!='|'>='|'<=') e2=expression      { $expr = new BinaryBooleanExpression($op.text, $e1.expr, $e2.expr); }
+    |   e1=expression op='&&' e2=expression                 { $expr = new BinaryBooleanExpression($op.text, $e1.expr, $e2.expr); }
+    |   e1=expression op='||' e2=expression                 { $expr = new BinaryBooleanExpression($op.text, $e1.expr, $e2.expr); }
     |   <assoc=right> e1=expression op='=' e2=expression    { $expr = new BinaryExpression($op.text, $e1.expr, $e2.expr); }
     ;
 
